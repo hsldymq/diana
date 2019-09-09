@@ -193,7 +193,7 @@ class Agent extends AbstractWorker
         }
 
         $this->shutdownTimer = $this->addTimer($this->idleShutdownSec, false, function () {
-            $this->sendMessage(new Message(MessageTypeEnum::QUITING, ''));
+            $this->sendMessage(new Message(MessageTypeEnum::STOP_SENDING, ''));
         });
     }
 

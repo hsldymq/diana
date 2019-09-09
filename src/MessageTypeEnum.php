@@ -14,7 +14,7 @@ class MessageTypeEnum
     const JOB_FINISHED = 2;
 
     // Agent通知Diana不再分配任务,即将退出
-    const QUITING = 3;
+    const STOP_SENDING = 3;
 
     // Diana告知Agent后续不会再发送消息
     const LAST_MSG = 4;
