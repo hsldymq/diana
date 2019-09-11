@@ -3,16 +3,11 @@
 require_once __DIR__.'/../../vendor/autoload.php';
 require_once __DIR__.'/BasicJob.php';
 
-use Archman\Diana\Agent;
 use Archman\Diana\AgentFactory;
 use Archman\Diana\Diana;
 use Archman\Diana\Timer\PeriodicTiming;
 
-$factory = new AgentFactory();
-$factory->registerEvent('start', function (Agent $agent) {
-    echo "Agent {$agent->getWorkerID()} Started.\n";
-})->registerSignal(SIGINT, function () {echo "signal\n";});
-$master = (new Diana($factory))
+$master = (new Diana(new AgentFactory()))
     ->addJob('1', new BasicJob('1'), new PeriodicTiming(new DateInterval('PT1S')))
     ->addJob('2', new BasicJob('2'), new PeriodicTiming(new DateInterval('PT5S')))
     ->addJob('3', new BasicJob('3'), new PeriodicTiming(new DateInterval('PT10S')))
