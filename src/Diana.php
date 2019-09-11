@@ -152,6 +152,7 @@ class Diana extends AbstractMaster
             $this->errorlessEmit('patrolling');
         }
 
+        $this->timer->clearJobs();
         try {
             // 使所有worker都退出
             $this->informAgentsQuit();
@@ -276,7 +277,6 @@ class Diana extends AbstractMaster
         if ($this->state !== self::STATE_RUNNING) {
             return;
         }
-
         if ($withError && !$this->shutdownError) {
             $this->shutdownError = $withError;
         }
