@@ -11,6 +11,14 @@ class AgentFactory implements WorkerfactoryInterface
 {
     /**
      * @var array [
+     *      [$signal, $handler],
+     *      ...
+     * ]
+     */
+    private $signalHandlers = [];
+
+    /**
+     * @var array [
      *      [$event, $handler],
      *      ...
      * ]
@@ -31,6 +39,10 @@ class AgentFactory implements WorkerfactoryInterface
     {
         $agent = new Agent($id, $socketFD);
 
+        foreach ($this->signalHandlers as $each) {
+            $agent->addSignalHandler($each[0], $each[1]);
+        }
+
         foreach ($this->eventHandlers as $each) {
             $agent->on($each[0], $each[1]);
         }
@@ -44,6 +56,21 @@ class AgentFactory implements WorkerfactoryInterface
         }
 
         return $agent;
+    }
+
+    /**
+     * 注册worker的信号处理器.
+     *
+     * @param int $signal
+     * @param callable $handler
+     *
+     * @return self
+     */
+    public function registerSignal(int $signal, callable $handler): self
+    {
+        $this->signalHandlers[] = [$signal, $handler];
+
+        return $this;
     }
 
     /**
