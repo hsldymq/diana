@@ -13,11 +13,11 @@ class PeriodicTiming implements TimingInterface
         $this->interval = $interval;
     }
 
-    public function getTimingTick(\DateTime $current): int
+    public function getTimingTick(\DateTime $current, Timer $timer): int
     {
         $currentTimestamp = $current->getTimestamp();
         $secDiff = $current->add($this->interval)->getTimestamp() - $currentTimestamp;
 
-        return intval(ceil($secDiff * Timer::TICKS_PER_SEC));
+        return intval(ceil($secDiff * $timer->getTicksPerSec()));
     }
 }
