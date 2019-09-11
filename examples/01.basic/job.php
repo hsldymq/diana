@@ -11,7 +11,7 @@ use Archman\Diana\Timer\PeriodicTiming;
 $factory = new AgentFactory();
 $factory->registerEvent('start', function (Agent $agent) {
     echo "Agent {$agent->getWorkerID()} Started.\n";
-});
+})->registerSignal(SIGINT, function () {echo "signal\n";});
 $master = (new Diana($factory))
     ->addJob('1', new BasicJob('1'), new PeriodicTiming(new DateInterval('PT1S')))
     ->addJob('2', new BasicJob('2'), new PeriodicTiming(new DateInterval('PT5S')))
