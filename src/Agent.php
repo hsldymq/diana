@@ -29,12 +29,12 @@ class Agent extends AbstractWorker
     /**
      * @var bool 是否空闲退出
      */
-    private $idleShutdown = false;
+    private $idleWait = false;
 
     /**
      * @var int 空闲退出的最长空闲时间(秒)
      */
-    private $idleShutdownSec = 0;
+    private $idleWaitSec = 0;
 
     /**
      * @var TimerInterface
@@ -54,9 +54,6 @@ class Agent extends AbstractWorker
     public function __construct(string $id, $socketFD)
     {
         parent::__construct($id, $socketFD);
-
-        $this->setIdleShutdown(60);
-        $this->trySetShutdownTimer();
     }
 
     public function run()
@@ -65,6 +62,7 @@ class Agent extends AbstractWorker
             return;
         }
 
+        $this->trySetShutdownTimer();
         $this->errorlessEmit('start');
 
         $this->state = self::STATE_RUNNING;
@@ -115,6 +113,10 @@ class Agent extends AbstractWorker
 
                 finished:
                 $this->sendMessage(new Message(MessageTypeEnum::JOB_FINISHED, ''));
+                // 如果没有设置等待时间,则立即退出
+                if (!$this->idleWait) {
+                    $this->sendMessage(new Message(MessageTypeEnum::STOP_SENDING, ''));
+                }
 
                 break;
             case MessageTypeEnum::LAST_MSG:
@@ -133,28 +135,18 @@ class Agent extends AbstractWorker
     }
 
     /**
-     * 设置worker的空闲退出的最大空闲时间(秒).
+     * 设置agent的空闲等待一定时间后如果没有任务分配再退出.
      *
      * @param int $seconds 必须大于0,否则设置无效
      */
-    public function setIdleShutdown(int $seconds)
+    public function setIdleWait(int $seconds)
     {
         if ($seconds <= 0) {
             return;
         }
 
-        $this->idleShutdown = true;
-        $this->idleShutdownSec = $seconds;
-    }
-
-    /**
-     * 不再允许空闲退出.
-     */
-    public function noIdleShutdown()
-    {
-        $this->idleShutdown = false;
-        $this->idleShutdownSec = 0;
-        $this->clearShutdownTimer();
+        $this->idleWait = true;
+        $this->idleWaitSec = $seconds;
     }
 
     /**
@@ -180,11 +172,11 @@ class Agent extends AbstractWorker
 
     private function trySetShutdownTimer()
     {
-        if (!$this->idleShutdown || $this->shutdownTimer) {
+        if (!$this->idleWait || $this->shutdownTimer) {
             return;
         }
 
-        $this->shutdownTimer = $this->addTimer($this->idleShutdownSec, false, function () {
+        $this->shutdownTimer = $this->addTimer($this->idleWaitSec, false, function () {
             $this->sendMessage(new Message(MessageTypeEnum::STOP_SENDING, ''));
         });
     }
