@@ -18,6 +18,8 @@ use React\EventLoop\TimerInterface;
  */
 class Agent extends AbstractWorker
 {
+    use TailingEventEmitterTrait;
+
     const STATE_RUNNING = 1;
     const STATE_SHUTDOWN = 3;
 
