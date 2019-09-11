@@ -126,7 +126,9 @@ class Timer
             return;
         }
 
-        $tick = $this->jobInfo[$jobID]['timing'](new \DateTime('now'));
+        /** @var TimingInterface $timing */
+        $timing = $this->jobInfo[$jobID]['timing'];
+        $tick = $timing->getTimingTick($this->getCurrentDateTime());
         if ($tick <= 0) {
             return;
         }
@@ -134,5 +136,10 @@ class Timer
         $this->tickJobs[$tick][] = $jobID;
         $this->jobInfo[$jobID]['tick'] = $tick;
         $this->jobInfo[$jobID]['indexInList'] = count($this->tickJobs[$tick]) - 1;
+    }
+
+    protected function getCurrentDateTime(): \DateTime
+    {
+        return new \DateTime('now');
     }
 }
