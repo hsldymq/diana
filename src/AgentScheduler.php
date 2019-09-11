@@ -78,6 +78,7 @@ class AgentScheduler
         }
 
         unset($this->agentList[$state][$agentID]);
+        unset($this->agentState[$agentID]);
     }
 
     /**
@@ -94,6 +95,7 @@ class AgentScheduler
 
         unset($this->agentList[$state][$agentID]);
         $this->agentList[self::RETIRED][$agentID] = true;
+        $this->agentState[$agentID] = self::RETIRED;
     }
 
     /**
