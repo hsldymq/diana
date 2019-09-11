@@ -160,7 +160,18 @@ class AgentSchedulerTest extends TestCase
     private function assertCountWorker(int $expectIdle, int $expectRetired, int $expectBusy, AgentScheduler $scheduler)
     {
         $this->assertEquals($expectIdle, (function () {return count($this->agentList[AgentScheduler::IDLE]);})->bindTo($scheduler, $scheduler)());
+        $this->assertEquals($expectIdle, (function () {
+            return count(array_filter($this->agentState, function ($each) {return $each === AgentScheduler::IDLE;}));
+        })->bindTo($scheduler, $scheduler)());
+
         $this->assertEquals($expectRetired, (function () {return count($this->agentList[AgentScheduler::RETIRED]);})->bindTo($scheduler, $scheduler)());
+        $this->assertEquals($expectRetired, (function () {
+            return count(array_filter($this->agentState, function ($each) {return $each === AgentScheduler::RETIRED;}));
+        })->bindTo($scheduler, $scheduler)());
+
         $this->assertEquals($expectBusy, (function () {return count($this->agentList[AgentScheduler::BUSY]);})->bindTo($scheduler, $scheduler)());
+        $this->assertEquals($expectBusy, (function () {
+            return count(array_filter($this->agentState, function ($each) {return $each === AgentScheduler::BUSY;}));
+        })->bindTo($scheduler, $scheduler)());
     }
 }
