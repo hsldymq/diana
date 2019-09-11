@@ -10,19 +10,11 @@ use React\EventLoop\TimerInterface;
 
 /**
  * 预定义事件列表:
- * @event start             worker启动
+ * @event start             agent子进程启动
  *                          参数: \Archman\Diana\Agent $agent
  *
  * @event error             发生错误
- *                          参数: string $reason, \Throwable $ex, \Archman\Diana\Agent $agent
- *                          $reason enum:
- *                              'decodingMessage'           解码非预定义消息时结构错误
- *                              'undefinedJob'              消息中没有携带job信息
- *                              'unrecognizedJob'           无法反序列化为Job对象
- *                              'executingJob'              执行job逻辑出现错误
- *                              'undefinedMessage'          Diana发来的消息无法识别
- *                              'disconnected'              与Diana断开连接
- *                              'unrecoverable'             当出现了不可恢复的错误,即将退出时
+ *                          参数: \Throwable $ex, \Archman\Diana\Agent $agent
  */
 class Agent extends AbstractWorker
 {
@@ -50,7 +42,7 @@ class Agent extends AbstractWorker
     private $shutdownTimer = null;
 
     /**
-     * @var bool 是否被动关闭(被动关闭是指由Diana杀死Agent进程)
+     * @var bool 是否被动关闭(被动关闭是指由主进程通过信号杀死Agent子进程)
      */
     private $passiveShutdown = false;
 
@@ -80,12 +72,12 @@ class Agent extends AbstractWorker
             try {
                 $this->process($this->patrolPeriod);
             } catch (\Throwable $e) {
-                $this->errorlessEmit('error', ['unrecoverable', $e]);
+                $this->errorlessEmit('error', [$e]);
                 break;
             }
 
             if (!$this->getCommunicator()->isReadable() && !$this->getCommunicator()->isWritable()) {
-                $this->errorlessEmit('error', ['disconnected', new \Exception('disconnected with Diana')]);
+                $this->errorlessEmit('error', [new \Exception('disconnected with Master')]);
                 break;
             }
         }
@@ -100,25 +92,25 @@ class Agent extends AbstractWorker
                 try {
                     $data = $this->decodeMessage($msg->getContent());
                 } catch (\Throwable $e) {
-                    $this->errorlessEmit('error', ['decodingMessage', $e]);
+                    $this->errorlessEmit('error', [$e]);
                     goto finished;
                 }
 
                 if (!isset($data['job'])) {
-                    $this->errorlessEmit('error', ['undefinedJob', new \Exception('lack of job field in the message')]);
+                    $this->errorlessEmit('error', [new \Exception('lack of job field in the message')]);
                     goto finished;
                 }
 
                 $obj = @unserialize($data['job']);
                 if (!($obj instanceof JobInterface)) {
-                    $this->errorlessEmit('error', ['unrecognizedJob', new \Exception("not job object: {$data['job']}")]);
+                    $this->errorlessEmit('error', [new \Exception("not job object: {$data['job']}")]);
                     goto finished;
                 }
 
                 try {
                     $obj->execute();
                 } catch (\Throwable $e) {
-                    $this->errorlessEmit('error', ['executingJob']);
+                    $this->errorlessEmit('error', [$e]);
                 }
 
                 finished:
@@ -134,7 +126,7 @@ class Agent extends AbstractWorker
                 }
                 break;
             default:
-                $this->errorlessEmit('error', ['undefinedMessage', new \Exception("undefined message type: {$msg->getType()}")]);
+                $this->errorlessEmit('error', [new \Exception("undefined message type: {$msg->getType()}")]);
         }
 
         $this->trySetShutdownTimer();
