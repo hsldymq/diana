@@ -18,8 +18,8 @@ $master = (new Diana(new AgentFactory()))
     })
     ->on('agentExit', function (string $agentID, int $pid, Diana $master) {
         echo "Agent {$agentID} Exit, PID: {$pid}.\n";
+    })
+    ->addSignalHandler(SIGINT, function (int $signal, Diana $master) {
+        $master->shutdown();
     });
-$master->addSignalHandler(SIGINT, function () use ($master) {
-    $master->shutdown();
-});
 $master->run();
