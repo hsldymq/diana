@@ -8,9 +8,12 @@ class PeriodicTiming implements TimingInterface
 {
     private $interval;
 
-    public function __construct(\DateInterval $interval)
+    private $isContinuous;
+
+    public function __construct(\DateInterval $interval, bool $isContinuous)
     {
         $this->interval = $interval;
+        $this->isContinuous = $isContinuous;
     }
 
     public function getTimingTick(\DateTime $current, TickerInterface $ticker): int
@@ -19,5 +22,10 @@ class PeriodicTiming implements TimingInterface
         $secDiff = $current->add($this->interval)->getTimestamp() - $currentTimestamp;
 
         return intval(ceil($secDiff * $ticker->getTicksPerSec()));
+    }
+
+    public function isContinuous(): bool
+    {
+        return $this->isContinuous;
     }
 }
