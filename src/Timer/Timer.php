@@ -9,8 +9,6 @@ use React\EventLoop\TimerInterface;
 
 class Timer implements TickerInterface
 {
-    const TICKS_PER_SEC = 1;
-
     /**
      * @var int
      */
