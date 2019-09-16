@@ -9,8 +9,6 @@ use React\EventLoop\TimerInterface;
 
 class Timer implements TickerInterface
 {
-    const TICKS_PER_SEC = 1;
-
     /**
      * @var int
      */
@@ -34,6 +32,7 @@ class Timer implements TickerInterface
      *          'timing' => (TimingInterface),
      *          'tick' => (integer|null),
      *          'indexInList' => (integer),
+     *          'isExecuting' => (bool),
      *      ],
      * ]
      */
@@ -54,11 +53,11 @@ class Timer implements TickerInterface
      */
     private $callback;
 
-    public function __construct(int $tickDuration, LoopInterface $eventLoop, callable $callback)
+    public function __construct(int $tickDuration, LoopInterface $eventLoop, callable $timeUpCallback)
     {
         $this->tickDuration = $tickDuration;
         $this->eventLoop = $eventLoop;
-        $this->callback = $callback;
+        $this->callback = $timeUpCallback;
     }
 
     public function __destruct()
@@ -94,10 +93,19 @@ class Timer implements TickerInterface
         ++$this->currentTick;
 
         foreach ($this->tickJobs[$this->currentTick] ?? [] as $index => $jobID) {
+            if (!isset($this->jobInfo[$jobID])) {
+                continue;
+            }
+
             try {
+                $this->jobInfo[$jobID]['isExecuting'] = true;
                 call_user_func($this->callback, $jobID);
             } finally {
-                $this->setNextTimingTick($jobID);
+                /** @var TimingInterface $timing */
+                $timing = $this->jobInfo[$jobID]['timing'];
+                if ($timing->isContinuous()) {
+                    $this->setNextTimingTick($jobID);
+                }
             }
         }
 
@@ -107,9 +115,11 @@ class Timer implements TickerInterface
     public function addJob(string $jobID, TimingInterface $timing)
     {
         $this->jobInfo[$jobID]['timing'] = $timing;
-        $tick = $this->jobInfo[$jobID]['tick'] ?? null;
+        $this->jobInfo[$jobID]['isExecuting'] = $this->jobInfo[$jobID]['isExecuting'] ?? false;
+        $this->jobInfo[$jobID]['tick'] = $tick = $this->jobInfo[$jobID]['tick'] ?? null;
+        $this->jobInfo[$jobID]['indexInList'] = $index = $this->jobInfo[$jobID]['indexInList'] ?? -1;
+
         if ($tick) {
-            $index = $this->jobInfo[$jobID]['indexInList'];
             unset($this->tickJobs[$tick][$index]);
             $this->setNextTimingTick($jobID);
         }
@@ -121,7 +131,33 @@ class Timer implements TickerInterface
             return;
         }
 
+        $tick = $this->jobInfo[$jobID]['tick'] ?? null;
+        if ($tick) {
+            $index = $this->jobInfo[$jobID]['indexInList'];
+            unset($this->tickJobs[$tick][$index]);
+        }
         unset($this->jobInfo[$jobID]);
+    }
+
+    /**
+     * @param string $jobID
+     */
+    public function finishExecuting(string $jobID)
+    {
+        if (!isset($this->jobInfo[$jobID])) {
+            return;
+        }
+
+        if (!$this->jobInfo[$jobID]['isExecuting']) {
+            return;
+        }
+
+        $this->jobInfo[$jobID]['isExecuting'] = false;
+        /** @var TimingInterface $timing */
+        $timing = $this->jobInfo[$jobID]['timing'];
+        if (!$timing->isContinuous()) {
+            $this->setNextTimingTick($jobID);
+        }
     }
 
     public function clearJobs()

@@ -230,6 +230,7 @@ class Diana extends AbstractMaster
                 if ($this->jobInfo[$jobID]['remove'] ?? false) {
                     $this->doRemoveJob($jobID);
                 }
+                $this->timer->finishExecuting($jobID);
                 $this->errorlessEmit('jobExecuted', [$agentID]);
                 break;
             case MessageTypeEnum::STOP_SENDING:
@@ -421,8 +422,9 @@ class Diana extends AbstractMaster
      */
     private function clearAgent(string $agentID, int $pid)
     {
-        if ($this->agentInfo[$agentID]['jobID'] ?? null) {
-            $jobID = $this->agentInfo[$agentID]['jobID'];
+        $jobID = $this->agentInfo[$agentID]['jobID'] ?? '';
+        if ($jobID) {
+            $this->timer->finishExecuting($jobID);
             if (isset($this->jobInfo[$jobID])) {
                 $this->jobInfo[$jobID]['agentID'] = null;
             }

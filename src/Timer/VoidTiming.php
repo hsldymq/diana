@@ -10,4 +10,9 @@ class VoidTiming implements TimingInterface
     {
         return -1;
     }
+
+    public function isContinuous(): bool
+    {
+        return false;
+    }
 }

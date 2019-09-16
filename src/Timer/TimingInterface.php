@@ -7,4 +7,6 @@ namespace Archman\Diana\Timer;
 interface TimingInterface
 {
     public function getTimingTick(\DateTime $dt, TickerInterface $ticker): int;
+
+    public function isContinuous(): bool;
 }
