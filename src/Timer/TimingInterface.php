@@ -6,5 +6,5 @@ namespace Archman\Diana\Timer;
 
 interface TimingInterface
 {
-    public function getTimingTick(\DateTime $dt, Timer $timer): int;
+    public function getTimingTick(\DateTime $dt, TickerInterface $ticker): int;
 }
