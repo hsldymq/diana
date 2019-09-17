@@ -14,10 +14,10 @@ use React\EventLoop\TimerInterface;
  *                          参数: \Archman\Diana\Agent $agent
  *
  * @event executing         开始执行job
- *                          参数: \Archman\Diana\Agent $agent
+ *                          参数: string $jobID, \Archman\Diana\Agent $agent
  *
  * @event executed          job成功执行
- *                          参数: float $runtime, \Archman\Diana\Agent $agent
+ *                          参数: string $jobID, float $runtime, \Archman\Diana\Agent $agent
  *                          $runtime单位: 秒
  *
  * @event error             发生错误
@@ -103,29 +103,20 @@ class Agent extends AbstractWorker
         switch ($msg->getType()) {
             case MessageTypeEnum::NORMAL_JOB:
                 try {
-                    $data = $this->decodeMessage($msg->getContent());
+                    $data = $this->decodeAndValidate($msg);
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
                     goto finished;
                 }
 
-                if (!isset($data['job'])) {
-                    $this->errorlessEmit('error', [new \Exception('lack of job field in the message')]);
-                    goto finished;
-                }
-
-                $obj = @unserialize($data['job']);
-                if (!($obj instanceof JobInterface)) {
-                    $this->errorlessEmit('error', [new \Exception("not job object: {$data['job']}")]);
-                    goto finished;
-                }
-
-                $this->errorlessEmit('executing');
+                $job = $data['job'];
+                $jobID = $data['jobID'];
+                $this->errorlessEmit('executing', [$jobID]);
                 try {
                     $startAt = $this->getTime();
-                    $obj->execute();
+                    $job->execute();
                     $runtime = $this->getTime() - $startAt;
-                    $this->errorlessEmit('executed', [$runtime]);
+                    $this->errorlessEmit('executed', [$jobID, $runtime]);
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
                 }
@@ -223,6 +214,34 @@ class Agent extends AbstractWorker
         }
 
         return $decoded;
+    }
+
+    /**
+     * @param Message $msg
+     *
+     * @return array
+     * @throws
+     */
+    private function decodeAndValidate(Message $msg): array
+    {
+        $data = $this->decodeMessage($msg->getContent());
+
+        if (!isset($data['job'])) {
+            throw new \Exception('lack of job field in the message');
+        }
+
+        if (!isset($data['jobID'])) {
+            throw new \Exception('lack of jobID field in the message');
+        }
+
+        $job = @unserialize($data['job']);
+        if (!($job instanceof JobInterface)) {
+            throw new \Exception("not job object: {$data['job']}");
+        }
+
+        $data['job'] = $job;
+
+        return $data;
     }
 
     /**
