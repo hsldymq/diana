@@ -19,9 +19,6 @@ use Archman\Whisper\Message;
  * @event patrolling                进行一次巡逻,巡逻会检查僵尸进程,并给使用者定时进行抽样的机会
  *                                  参数: \Archman\Diana\Diana $master
  *
- * @event jobExecuted               一个job执行完成
- *                                  参数: string $jobID, \Archman\Diana\Diana $master
- *
  * @event agentExit                 agent子进程退出
  *                                  参数: string $agentID, int $pid, \Archman\Diana\Diana $master
  *
@@ -231,7 +228,6 @@ class Diana extends AbstractMaster
                     $this->doRemoveJob($jobID);
                 }
                 $this->timer->finishExecuting($jobID);
-                $this->errorlessEmit('jobExecuted', [$agentID]);
                 break;
             case MessageTypeEnum::STOP_SENDING:
                 // 子进程agent主动告知不再希望收到更多队列消息
