@@ -17,9 +17,9 @@ use React\EventLoop\TimerInterface;
  *                          参数: string $jobID, \Archman\Diana\Agent $agent
  *
  * @event executed          job成功执行
- *                          参数: string $jobID, int $startedAt, float $runtime, \Archman\Diana\Agent $agent
- *                          $startedAt 代表job开始执行时的时间戳
- *                          $runtime单位: 秒
+ *                          参数: string $jobID, int $executedAt, float $runtime, \Archman\Diana\Agent $agent
+ *                          $executedAt 代表job开始执行时的时间戳
+ *                          $runtime 代表job执行时长, 单位:秒
  *
  * @event disconnected      已与主进程的连接断开
  *                          \Archman\Diana\Agent $agent
