@@ -17,7 +17,8 @@ use React\EventLoop\TimerInterface;
  *                          参数: \Archman\Diana\Agent $agent
  *
  * @event executed          job成功执行
- *                          参数: \Archman\Diana\Agent $agent
+ *                          参数: float $runtime, \Archman\Diana\Agent $agent
+ *                          $runtime单位: 秒
  *
  * @event error             发生错误
  *                          参数: \Throwable $ex, \Archman\Diana\Agent $agent
@@ -89,6 +90,12 @@ class Agent extends AbstractWorker
         }
     }
 
+    /**
+     * @param Message $msg
+     *
+     * @return void
+     * @throws
+     */
     public function handleMessage(Message $msg)
     {
         $this->clearShutdownTimer();
@@ -115,8 +122,10 @@ class Agent extends AbstractWorker
 
                 $this->errorlessEmit('executing');
                 try {
+                    $startAt = $this->getTime();
                     $obj->execute();
-                    $this->errorlessEmit('executed');
+                    $runtime = $this->getTime() - $startAt;
+                    $this->errorlessEmit('executed', [$runtime]);
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
                 }
@@ -214,5 +223,17 @@ class Agent extends AbstractWorker
         }
 
         return $decoded;
+    }
+
+    /**
+     * @return float
+     */
+    private function getTime(): float
+    {
+        if (function_exists('hrtime')) {
+            return hrtime(true) / 1e9;
+        } else {
+            return microtime(true);
+        }
     }
 }
