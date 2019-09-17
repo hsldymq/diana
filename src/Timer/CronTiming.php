@@ -13,8 +13,6 @@ class CronTiming implements TimingInterface
 {
     private $cronExpression;
 
-    private $isContinuous;
-
     /**
      * @param string $cronExpression cron兼容的表达式,例如'* * * * *',
      *                                              *    *    *    *    *
@@ -26,12 +24,10 @@ class CronTiming implements TimingInterface
      *                                              |    |    +--------------- day of month (1 - 31)
      *                                              |    +-------------------- hour (0 - 23)
      *                                              +------------------------- min (0 - 59)
-     * @param bool $isContinuous
      */
-    public function __construct(string $cronExpression, bool $isContinuous)
+    public function __construct(string $cronExpression)
     {
         $this->cronExpression = CronExpression::factory($cronExpression);
-        $this->isContinuous = $isContinuous;
     }
 
     public function getTimingTick(\DateTime $current, TickerInterface $ticker): int
@@ -47,6 +43,6 @@ class CronTiming implements TimingInterface
 
     public function isContinuous(): bool
     {
-        return $this->isContinuous;
+        return true;
     }
 }

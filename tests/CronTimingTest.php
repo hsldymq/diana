@@ -12,12 +12,12 @@ class CronTimingTest extends TestCase
 {
     public function testGetTimingTick()
     {
-        $timing = new CronTiming('* * * * *', true);
+        $timing = new CronTiming('* * * * *');
         // next date time should be 2019-01-01 00:01:00
         $ticks = $timing->getTimingTick(new DateTime('2019-01-01 00:00:30'), $this->getSecTicker());
         $this->assertEquals(30, $ticks);
 
-        $timing = new CronTiming('5 * 2-4 * * ', true);
+        $timing = new CronTiming('5 * 2-4 * * ');
         // next date time should be 2019-01-02 00:05:00
         $ticks = $timing->getTimingTick(new DateTime('2019-01-01 00:01:00'), $this->getSecTicker());
         $this->assertEquals(86400 + 240, $ticks);
@@ -25,7 +25,7 @@ class CronTimingTest extends TestCase
         $ticks = $timing->getTimingTick(new DateTime('2019-01-02 00:05:00'), $this->getSecTicker());
         $this->assertEquals(3600, $ticks);
 
-        $timing = new CronTiming('4,8 * 2-4 * * ', true);
+        $timing = new CronTiming('4,8 * 2-4 * * ');
         // next date time should be 2019-01-02 00:04:00
         $ticks = $timing->getTimingTick(new DateTime('2019-01-01 00:01:00'), $this->getSecTicker());
         $this->assertEquals(86400 + 180, $ticks);
@@ -33,7 +33,7 @@ class CronTimingTest extends TestCase
         $ticks = $timing->getTimingTick(new DateTime('2019-01-02 00:04:00'), $this->getSecTicker());
         $this->assertEquals(240, $ticks);
 
-        $timing = new CronTiming('*/5 * 2-4 * * ', true);
+        $timing = new CronTiming('*/5 * 2-4 * * ');
         // next date time should be 2019-01-02 00:00:00
         $ticks = $timing->getTimingTick(new DateTime('2019-01-01 00:01:00'), $this->getSecTicker());
         $this->assertEquals(86400 - 60, $ticks);
