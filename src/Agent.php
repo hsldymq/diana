@@ -17,7 +17,9 @@ use React\EventLoop\TimerInterface;
  *                          参数: string $jobID, \Archman\Diana\Agent $agent
  *
  * @event executed          job成功执行
- *                          参数: string $jobID, float $runtime, \Archman\Diana\Agent $agent
+ *                          参数: string $jobID, int $startedAt, float $runtime, \Archman\Diana\Agent $agent
+ *                          $startedAt 代表job开始执行时的时间戳
+ *                          $runtime单位: 秒
  *
  * @event disconnected      已与主进程的连接断开
  *                          \Archman\Diana\Agent $agent
@@ -118,7 +120,7 @@ class Agent extends AbstractWorker
                     $startAt = $this->getTime();
                     $job->execute();
                     $runtime = $this->getTime() - $startAt;
-                    $this->errorlessEmit('executed', [$jobID, $runtime]);
+                    $this->errorlessEmit('executed', [$jobID, time(), $runtime]);
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
                 }
