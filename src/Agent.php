@@ -13,6 +13,12 @@ use React\EventLoop\TimerInterface;
  * @event start             agent子进程启动
  *                          参数: \Archman\Diana\Agent $agent
  *
+ * @event executing         开始执行job
+ *                          参数: \Archman\Diana\Agent $agent
+ *
+ * @event executed          job成功执行
+ *                          参数: \Archman\Diana\Agent $agent
+ *
  * @event error             发生错误
  *                          参数: \Throwable $ex, \Archman\Diana\Agent $agent
  */
@@ -107,8 +113,10 @@ class Agent extends AbstractWorker
                     goto finished;
                 }
 
+                $this->errorlessEmit('executing');
                 try {
                     $obj->execute();
+                    $this->errorlessEmit('executed');
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
                 }
