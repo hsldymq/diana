@@ -6,7 +6,10 @@ namespace Archman\Diana\Timer;
 
 interface TickerInterface
 {
-    public function getTickDuration(): int;
-
+    /**
+     * 返回每一秒的tick数
+     *
+     * @return float
+     */
     public function getTicksPerSec(): float;
 }

@@ -93,7 +93,7 @@ class Timer implements TickerInterface
         ++$this->currentTick;
 
         foreach ($this->tickJobs[$this->currentTick] ?? [] as $index => $jobID) {
-            if (!isset($this->jobInfo[$jobID])) {
+            if (!isset($this->jobInfo[$jobID]) || $this->jobInfo[$jobID]['isExecuting']) {
                 continue;
             }
 
@@ -142,7 +142,7 @@ class Timer implements TickerInterface
     /**
      * @param string $jobID
      */
-    public function finishExecuting(string $jobID)
+    public function finish(string $jobID)
     {
         if (!isset($this->jobInfo[$jobID])) {
             return;
@@ -174,18 +174,6 @@ class Timer implements TickerInterface
     public function getTicksPerSec(): float
     {
         return floatval(Duration::SECOND / $this->tickDuration);
-    }
-
-    /**
-     * 返回一次tick的时间间隔.
-     *
-     * 参考Duration类.
-     *
-     * @return int
-     */
-    public function getTickDuration(): int
-    {
-        return $this->tickDuration;
     }
 
     private function setNextTimingTick($jobID)

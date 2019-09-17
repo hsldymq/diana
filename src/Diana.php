@@ -227,7 +227,7 @@ class Diana extends AbstractMaster
                 if ($this->jobInfo[$jobID]['remove'] ?? false) {
                     $this->doRemoveJob($jobID);
                 }
-                $this->timer->finishExecuting($jobID);
+                $this->timer->finish($jobID);
                 break;
             case MessageTypeEnum::STOP_SENDING:
                 // 子进程agent主动告知不再希望收到更多队列消息
@@ -312,11 +312,13 @@ class Diana extends AbstractMaster
 
         try {
             $message = new Message(MessageTypeEnum::NORMAL_JOB, json_encode([
-                'job' => serialize($this->jobInfo[$jobID]['jobObject'])
+                'jobID' => $jobID,
+                'job' => serialize($this->jobInfo[$jobID]['jobObject']),
             ]));
             $this->sendMessage($agentID, $message);
         } catch (\Throwable $e) {
             $this->agentScheduler->release($agentID);
+            $this->timer->finish($jobID);
             throw $e;
         }
         $this->agentInfo[$agentID]['jobID'] = $jobID;
@@ -420,7 +422,7 @@ class Diana extends AbstractMaster
     {
         $jobID = $this->agentInfo[$agentID]['jobID'] ?? '';
         if ($jobID) {
-            $this->timer->finishExecuting($jobID);
+            $this->timer->finish($jobID);
             if (isset($this->jobInfo[$jobID])) {
                 $this->jobInfo[$jobID]['agentID'] = null;
             }
