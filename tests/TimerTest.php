@@ -26,20 +26,20 @@ class TimerTest extends TestCase
         $timer->addJob($jobID2, new PeriodicTiming(new DateInterval('PT2S'), true));
         $timer->addJob($jobID3, new PeriodicTiming(new DateInterval('PT5S'), true));
         $timer->start();
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 0; $i < 1000; $i++) {
             $timer->tick();
             $timer->finish($jobID1);
-            if ($i % 2 === 1) {
+            if ($i % 4 === 3) {
                 $timer->finish($jobID2);
             }
-            if ($i % 5 === 4) {
+            if ($i % 10 === 9) {
                 $timer->finish($jobID3);
             }
         }
 
         $this->assertEquals(1000, $tickCounter[$jobID1]);
-        $this->assertEquals(500, $tickCounter[$jobID2]);
-        $this->assertEquals(200, $tickCounter[$jobID3]);
+        $this->assertEquals(250, $tickCounter[$jobID2]);
+        $this->assertEquals(100, $tickCounter[$jobID3]);
 
 
         $tickCounter = [
