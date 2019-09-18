@@ -93,7 +93,16 @@ class Timer implements TickerInterface
         ++$this->currentTick;
 
         foreach ($this->tickJobs[$this->currentTick] ?? [] as $index => $jobID) {
-            if (!isset($this->jobInfo[$jobID]) || $this->jobInfo[$jobID]['isExecuting']) {
+            if (!isset($this->jobInfo[$jobID])) {
+                continue;
+            }
+
+            /** @var TimingInterface $timing */
+            $timing = $this->jobInfo[$jobID]['timing'];
+            if ($this->jobInfo[$jobID]['isExecuting']) {
+                if ($timing->isContinuous()) {
+                    $this->setNextTimingTick($jobID);
+                }
                 continue;
             }
 
@@ -101,8 +110,6 @@ class Timer implements TickerInterface
                 $this->jobInfo[$jobID]['isExecuting'] = true;
                 call_user_func($this->callback, $jobID);
             } finally {
-                /** @var TimingInterface $timing */
-                $timing = $this->jobInfo[$jobID]['timing'];
                 if ($timing->isContinuous()) {
                     $this->setNextTimingTick($jobID);
                 }
