@@ -370,16 +370,6 @@ class Diana extends AbstractMaster
     }
 
     /**
-     * 清理退出的子进程.
-     */
-    private function waitChildren()
-    {
-        while (($pid = pcntl_wait($status, WNOHANG)) > 0) {
-            $this->clearAgent($this->idMap[$pid] ?? '', $pid);
-        }
-    }
-
-    /**
      * 通知并确保所有worker退出.
      *
      * @throws
