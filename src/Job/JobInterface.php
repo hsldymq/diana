@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Archman\Diana;
+namespace Archman\Diana\Job;
 
 interface JobInterface
 {

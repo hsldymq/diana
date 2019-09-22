@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Archman\Diana;
 
+use Archman\Diana\Job\JobInterface;
 use Archman\Whisper\AbstractWorker;
 use Archman\Whisper\Message;
 use React\EventLoop\TimerInterface;
@@ -113,6 +114,7 @@ class Agent extends AbstractWorker
                     goto finished;
                 }
 
+                /** @var JobInterface $job */
                 $job = $data['job'];
                 $jobID = $data['jobID'];
                 $this->errorlessEmit('executing', [$jobID]);
