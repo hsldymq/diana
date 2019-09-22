@@ -10,6 +10,7 @@ use Archman\Diana\Timer\TimingInterface;
 use Archman\Whisper\AbstractMaster;
 use Archman\Whisper\Interfaces\WorkerFactoryInterface;
 use Archman\Whisper\Message;
+use Archman\Diana\Job\JobInterface;
 
 /**
  * 可以使用on方法监听以下预定义事件:
