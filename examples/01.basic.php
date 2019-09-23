@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__.'/../../vendor/autoload.php';
-require_once __DIR__.'/BasicJob.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/basic/BasicJob.php';
 
 use Archman\Diana\AgentFactory;
 use Archman\Diana\Diana;
