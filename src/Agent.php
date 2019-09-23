@@ -330,8 +330,8 @@ class Agent extends AbstractWorker
             return;
         }
 
-        $repeater = $job->getRepeater();
         $this->stopProcess();
+        $repeater = $job->getRepeater();
         $this->isInRepeatLoop = true;
         do {
             try {
