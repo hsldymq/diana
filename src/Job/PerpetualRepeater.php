@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Archman\Diana\Job;
 
 /**
- * 永久重复.
- * 直到收到主进程发来退出或停止信号.
+ * 这个repeater会使得job永久重复执行.
+ *
+ * 直到执行job的进程收到主进程发来的停止执行的消息,job便会正常结束.
  */
 class PerpetualRepeater implements RepeaterInterface
 {
