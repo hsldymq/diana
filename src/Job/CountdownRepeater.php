@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Archman\Diana\Job;
 
 /**
- * 按次数重复.
+ * 这个repeater会按照指定的值重复执行若干次.
+ *
+ * 例如,指定5次,那么当job第一次运行之后,会再重复执行5次之后正常结束.
+ *
+ * 如果执行job的进程收到主进程发来的停止消息,也会正常结束.
  */
 class CountdownRepeater implements RepeaterInterface
 {
