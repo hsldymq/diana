@@ -1,5 +1,6 @@
 <?php
 
+use Archman\Diana\Agent;
 use Archman\Diana\Job\JobInterface;
 
 class BasicJob implements JobInterface
@@ -11,7 +12,7 @@ class BasicJob implements JobInterface
         $this->id = $id;
     }
 
-    public function execute()
+    public function execute(Agent $agent)
     {
         $dt = new DateTime('now');
         echo "Job {$this->id} Executed. {$dt->format('Y-m-d H:i:s')}\n";

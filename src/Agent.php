@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Archman\Diana;
 
 use Archman\Diana\Job\JobInterface;
+use Archman\Diana\Job\RepetitionInterface;
 use Archman\Whisper\AbstractWorker;
 use Archman\Whisper\Message;
 use React\EventLoop\TimerInterface;
@@ -33,6 +34,7 @@ class Agent extends AbstractWorker
     use TailingEventEmitterTrait;
 
     const STATE_RUNNING = 1;
+    const STATE_SHUTTING = 2;
     const STATE_SHUTDOWN = 3;
 
     /**
@@ -41,12 +43,12 @@ class Agent extends AbstractWorker
     private $state = self::STATE_SHUTDOWN;
 
     /**
-     * @var bool 是否空闲退出
+     * @var bool 是否空闲等待
      */
     private $idleWait = false;
 
     /**
-     * @var int 空闲退出的最长空闲时间(秒)
+     * @var int 空闲等待最长时间后退出(秒)
      */
     private $idleWaitSec = 0;
 
@@ -64,6 +66,16 @@ class Agent extends AbstractWorker
      * @var float 进行一次巡逻的间隔周期(秒)
      */
     private $patrolPeriod = 60.0;
+
+    /**
+     * @var bool 是否处于job重复执行状态.
+     */
+    private $isInRepeatLoop = false;
+
+    /**
+     * @var string
+     */
+    private $currentJobID;
 
     public function __construct(string $id, $socketFD)
     {
@@ -119,29 +131,49 @@ class Agent extends AbstractWorker
                 $jobID = $data['jobID'];
                 $this->errorlessEmit('executing', [$jobID]);
                 try {
+                    $this->currentJobID = $jobID;
                     $startAt = $this->getTime();
-                    $job->execute();
+                    $this->executeJob($job);
                     $runtime = $this->getTime() - $startAt;
                     $this->errorlessEmit('executed', [$jobID, time(), $runtime]);
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
+                } finally {
+                    $this->currentJobID = null;
                 }
 
                 finished:
                 $this->sendMessage(new Message(MessageTypeEnum::JOB_FINISHED, ''));
-                // 如果没有设置等待时间,则立即退出
-                if (!$this->idleWait) {
-                    $this->sendMessage(new Message(MessageTypeEnum::STOP_SENDING, ''));
+                if ($this->state === self::STATE_SHUTTING) {
+                    $this->runShutdownProgression();
+                } else {
+                    // 如果没有设置等待时间,则立即退出
+                    if (!$this->idleWait) {
+                        $this->sendMessage(new Message(MessageTypeEnum::STOP_SENDING, ''));
+                    }
+                }
+
+                break;
+            case MessageTypeEnum::STOP_EXECUTING:
+                try {
+                    $data = $this->decodeMessage($msg->getContent());
+                    if ($this->currentJobID !== $data['jobID']) {
+                        throw new \Exception("can not stop job {$this->currentJobID}, incorrect job id: {$data['jobID']}");
+                    }
+                    $this->isInRepeatLoop = false;
+                } catch (\Throwable $e) {
+                    $this->errorlessEmit('error', [$e]);
                 }
 
                 break;
             case MessageTypeEnum::LAST_MSG:
-                if ($this->passiveShutdown) {
-                    $this->sendMessage(new Message(MessageTypeEnum::KILL_ME, ''));
+                if ($this->isInRepeatLoop) {
+                    $this->isInRepeatLoop = false;
+                    $this->state = self::STATE_SHUTTING;
                 } else {
-                    $this->stopProcess();
-                    $this->state = self::STATE_SHUTDOWN;
+                    $this->runShutdownProgression();
                 }
+
                 break;
             default:
                 $this->errorlessEmit('error', [new \Exception("undefined message type: {$msg->getType()}")]);
@@ -151,7 +183,9 @@ class Agent extends AbstractWorker
     }
 
     /**
-     * 设置agent的空闲等待一定时间后如果没有任务分配再退出.
+     * 设置agent的空闲最大等待时间, 如果空闲超过此时间之后就退出.
+     *
+     * 如果未设置该值,那么默认情况下,agent执行了job之后就直接退出.
      *
      * @param int $seconds 必须大于0,否则设置无效
      */
@@ -184,6 +218,14 @@ class Agent extends AbstractWorker
         try {
             $this->emit($event, $args);
         } finally {}
+    }
+
+    /**
+     * @return string
+     */
+    public function getAgentID(): string
+    {
+        return $this->getWorkerID();
     }
 
     private function trySetShutdownTimer()
@@ -260,5 +302,54 @@ class Agent extends AbstractWorker
         } else {
             return microtime(true);
         }
+    }
+
+    private function runShutdownProgression()
+    {
+        if ($this->passiveShutdown) {
+            $this->sendMessage(new Message(MessageTypeEnum::KILL_ME, ''));
+        } else {
+            $this->stopProcess();
+            $this->state = self::STATE_SHUTDOWN;
+        }
+    }
+
+    /**
+     * 运行job逻辑.
+     *
+     * 允许job重复执行,对实现了RepetitionInterface的job,会判断在一次运行完毕后是否可以继续重复运行.
+     *
+     * @param JobInterface $job
+     *
+     * @throws
+     */
+    private function executeJob(JobInterface $job)
+    {
+        if (!($job instanceof RepetitionInterface)) {
+            $job->execute($this);
+            return;
+        }
+
+        $this->stopProcess();
+        $repeater = $job->getRepeater();
+        $this->isInRepeatLoop = true;
+        do {
+            try {
+                $job->execute($this);
+
+                if (!$this->isInRepeatLoop ||
+                    !$repeater->isRepeatable(new \DateTime()) ||
+                    (!$this->getCommunicator()->isReadable() && !$this->getCommunicator()->isWritable())
+                ) {
+                    break;
+                }
+
+                $this->process($repeater->getRepetitionInterval());
+            } catch (\Throwable $e) {
+                $this->isInRepeatLoop = false;
+                throw $e;
+            }
+        } while (true);
+        $this->isInRepeatLoop = false;
     }
 }

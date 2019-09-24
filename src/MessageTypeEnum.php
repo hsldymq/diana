@@ -21,4 +21,7 @@ class MessageTypeEnum
 
     // 在被动模式下子进程告知主进程发送kill信号杀死子进程
     const KILL_ME = 5;
+
+    // 通知agent停止继续执行job
+    const STOP_EXECUTING = 6;
 }

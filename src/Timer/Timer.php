@@ -126,7 +126,7 @@ class Timer implements TickerInterface
         $this->jobInfo[$jobID]['tick'] = $tick = $this->jobInfo[$jobID]['tick'] ?? null;
         $this->jobInfo[$jobID]['indexInList'] = $index = $this->jobInfo[$jobID]['indexInList'] ?? -1;
 
-        if ($tick) {
+        if ($tick || $this->timer) {
             unset($this->tickJobs[$tick][$index]);
             $this->setNextTimingTick($jobID);
         }

@@ -179,8 +179,8 @@ class Diana extends AbstractMaster
     {
         $this->jobInfo[$jobID]['jobObject'] = $job;
         $this->jobInfo[$jobID]['agentID'] = $this->jobInfo[$jobID]['agentID'] ?? null;
+        $this->jobInfo[$jobID]['remove'] = false;
         $this->timer->addJob($jobID, $timing);
-        unset($this->jobInfo[$jobID]['remove']);
 
         return $this;
     }
@@ -202,6 +202,8 @@ class Diana extends AbstractMaster
 
         if ($this->jobInfo[$jobID]['agentID'] ?? false) {
             $this->jobInfo[$jobID]['remove'] = true;
+            $this->stopJob($jobID);
+            return;
         }
 
         $this->doRemoveJob($jobID);
@@ -222,13 +224,10 @@ class Diana extends AbstractMaster
                 $this->agentScheduler->release($agentID);
                 $jobID = $this->agentInfo[$agentID]['jobID'] ?? '';
                 if ($jobID) {
-                    $this->jobInfo[$jobID]['agentID'] = null;
                     $this->agentInfo[$agentID]['jobID'] = null;
+                    $this->finishJob($jobID);
                 }
-                if ($this->jobInfo[$jobID]['remove'] ?? false) {
-                    $this->doRemoveJob($jobID);
-                }
-                $this->timer->finish($jobID);
+
                 break;
             case MessageTypeEnum::STOP_SENDING:
                 // 子进程agent主动告知不再希望收到更多队列消息
@@ -281,6 +280,31 @@ class Diana extends AbstractMaster
 
         $this->stopProcess();
         $this->state = self::STATE_SHUTTING;
+    }
+
+    /**
+     * 停止执行指定job,但不移除.
+     *
+     * 停止后,到下一个执行周期时,又会重新执行.
+     *
+     * @param string $jobID
+     *
+     * @throws
+     */
+    public function stopJob(string $jobID)
+    {
+        $agentID = $this->jobInfo[$jobID]['agentID'] ?? '';
+        if (!$agentID) {
+            return;
+        }
+
+        try {
+            $this->sendMessage($agentID, new Message(MessageTypeEnum::STOP_EXECUTING, json_encode([
+                'jobID' => $jobID,
+            ])));
+        } catch (\Throwable $e) {
+            $this->errorlessEmit('error', [$e]);
+        }
     }
 
     /**
@@ -377,12 +401,11 @@ class Diana extends AbstractMaster
      */
     private function informAgentsQuit()
     {
+        $lastSec = -1;
         $startInformTime = $now = time();
-        $informCount = 0;
         do {
-            // 每10秒进行一次通知
-            if (($now - $startInformTime) / 10 >= $informCount) {
-                $informCount++;
+            // 每秒进行一次通知
+            if ($now >= $lastSec) {
                 foreach ($this->agentInfo as $agentID => $each) {
                     try {
                         $this->sendLastMessage($agentID);
@@ -396,8 +419,9 @@ class Diana extends AbstractMaster
                 break;
             }
 
-            $this->process(0.5);
+            $this->process(0.2);
             $this->waitChildren();
+            $lastSec = $now;
             $now = time();
             // 防止子进程无响应,这里循环一定时间后直接退出
         } while (($now - $startInformTime) < $this->shutdownTimeoutSec);
@@ -413,10 +437,7 @@ class Diana extends AbstractMaster
     {
         $jobID = $this->agentInfo[$agentID]['jobID'] ?? '';
         if ($jobID) {
-            $this->timer->finish($jobID);
-            if (isset($this->jobInfo[$jobID])) {
-                $this->jobInfo[$jobID]['agentID'] = null;
-            }
+            $this->finishJob($jobID);
         }
 
         $this->agentScheduler->remove($agentID);
@@ -424,6 +445,25 @@ class Diana extends AbstractMaster
         unset($this->idMap[$pid]);
     }
 
+    /**
+     * @param string $jobID
+     */
+    private function finishJob(string $jobID)
+    {
+        if (isset($this->jobInfo[$jobID])) {
+            $this->jobInfo[$jobID]['agentID'] = null;
+        }
+
+        if ($this->jobInfo[$jobID]['remove'] ?? false) {
+            $this->doRemoveJob($jobID);
+        }
+
+        $this->timer->finish($jobID);
+    }
+
+    /**
+     * @param string $jobID
+     */
     private function doRemoveJob(string $jobID)
     {
         unset($this->jobInfo[$jobID]);
