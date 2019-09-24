@@ -20,7 +20,6 @@ class PerpetualRepetitionJob implements JobInterface, RepetitionInterface
     {
         $dt = new DateTime();
         echo "Agent: {$agent->getAgentID()}, Job {$this->name} Executed. {$dt->format('Y-m-d H:i:s')}\n";
-        sleep(2);
     }
 
     public function getRepeater(): RepeaterInterface
