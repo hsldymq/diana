@@ -35,9 +35,25 @@ class AgentFactory implements WorkerfactoryInterface
      */
     private $isPassiveShutdown = null;
 
+    /**
+     * @var bool
+     */
+    private $captureSignal = true;
+
     public function makeWorker(string $id, $socketFD): AbstractWorker
     {
         $agent = new Agent($id, $socketFD);
+
+        if ($this->captureSignal) {
+            // 在以非daemon方式运行的情况下,子进程作为前台进程组会收到SIGINT,SIGQUIT而非正常退出,所以需要捕获该信号
+            if (defined('SIGINT')) {
+                $agent->addSignalHandler(SIGINT, function () {});
+            }
+
+            if (defined('SIGQUIT')) {
+                $agent->addSignalHandler(SIGQUIT, function () {});
+            }
+        }
 
         foreach ($this->signalHandlers as $each) {
             $agent->addSignalHandler($each[0], $each[1]);
@@ -120,6 +136,20 @@ class AgentFactory implements WorkerfactoryInterface
     public function setShutdownMode(bool $isPassive): self
     {
         $this->isPassiveShutdown = $isPassive;
+
+        return $this;
+    }
+
+    /**
+     * 默认情况下,worker进程会捕获SIGINT和SIGQUIT信号,防止被信号直接杀死.
+     *
+     * @param bool $c 传递false不默认捕获这两个信号
+     *
+     * @return self
+     */
+    public function setCaptureSignal(bool $c): self
+    {
+        $this->captureSignal = $c;
 
         return $this;
     }
