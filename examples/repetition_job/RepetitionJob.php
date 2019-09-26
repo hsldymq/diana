@@ -8,15 +8,12 @@ use Archman\Diana\Job\RepeaterInterface;
 
 class RepetitionJob implements JobInterface, RepetitionInterface
 {
-    private $name;
-
-    public function __construct()
-    {
-        $this->name = md5(time());
-    }
+    private $count = 0;
 
     public function execute()
     {
+        $this->count++;
+        echo "execute method called, count: {$this->count}\n";
     }
 
     public function getRepeater(): RepeaterInterface
