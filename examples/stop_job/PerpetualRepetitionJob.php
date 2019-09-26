@@ -16,10 +16,8 @@ class PerpetualRepetitionJob implements JobInterface, RepetitionInterface
         $this->name = md5(time());
     }
 
-    public function execute(Agent $agent)
+    public function execute()
     {
-        $dt = new DateTime();
-        echo "Agent: {$agent->getAgentID()}, Job {$this->name} Executed. {$dt->format('Y-m-d H:i:s')}\n";
     }
 
     public function getRepeater(): RepeaterInterface

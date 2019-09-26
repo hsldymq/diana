@@ -3,11 +3,21 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/repetition_job/RepetitionJob.php';
 
+use Archman\Diana\Agent;
 use Archman\Diana\AgentFactory;
 use Archman\Diana\Diana;
 use Archman\Diana\Timer\PeriodicTiming;
 
-$master = (new Diana(new AgentFactory()))
+$factory = (new AgentFactory())
+    ->registerEvent('error', function (\Throwable $e) {
+        echo "Agent Error: {$e->getMessage()}\n";
+    })
+    ->registerEvent('executed', function (string $jobID, int $startedAt, float $runtime, Agent $agent) {
+        $dt = new DateTime("@{$startedAt}");
+        echo "Job {$jobID} Executed By Agent {$agent->getAgentID()} At {$dt->format('Y-m-d H:i:s')}, runtime: {$runtime} Seconds. $startedAt\n";
+    });
+
+$master = (new Diana($factory))
     ->addJob('1', new RepetitionJob(), new PeriodicTiming(new DateInterval('PT1S'), true))
     ->on('shutdown', function (Diana $master) {
         echo "Master Shutdown.\n";
