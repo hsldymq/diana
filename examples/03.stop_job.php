@@ -22,20 +22,20 @@ $master = (new Diana($factory))
         echo "Master Shutdown.\n";
     })
     ->on('start', function (Diana $master) {
-        $master->addJob('1', new PerpetualRepetitionJob(), new PeriodicTiming(new DateInterval('PT1S'), true));
-        $master->addJob('2', new PerpetualRepetitionJob(), new PeriodicTiming(new DateInterval('PT2S'), true));
-        $master->addJob('3', new PerpetualRepetitionJob(), new PeriodicTiming(new DateInterval('PT3S'), true));
+        $master->addJob('a', new PerpetualRepetitionJob('a'), new PeriodicTiming(new DateInterval('PT1S'), true));
+        $master->addJob('b', new PerpetualRepetitionJob('b'), new PeriodicTiming(new DateInterval('PT2S'), true));
+        $master->addJob('c', new PerpetualRepetitionJob('c'), new PeriodicTiming(new DateInterval('PT3S'), true));
     })
     ->on('agentExit', function (string $agentID, int $pid, Diana $master) {
         echo "Agent {$agentID} Exit, PID: {$pid}.\n";
     })
     ->addSignalHandler(SIGQUIT, function (int $signal, Diana $master) {
-        $master->removeJob('1');
-        $master->removeJob('2');
-        $master->removeJob('3');
-        $master->addJob('1', new PerpetualRepetitionJob(), new PeriodicTiming(new DateInterval('PT1S'), true));
-        $master->addJob('2', new PerpetualRepetitionJob(), new PeriodicTiming(new DateInterval('PT2S'), true));
-        $master->addJob('3', new PerpetualRepetitionJob(), new PeriodicTiming(new DateInterval('PT3S'), true));
+        $master->removeJob('a');
+        $master->removeJob('b');
+        $master->removeJob('c');
+        $master->addJob('a', new PerpetualRepetitionJob('a'), new PeriodicTiming(new DateInterval('PT1S'), true));
+        $master->addJob('b', new PerpetualRepetitionJob('b'), new PeriodicTiming(new DateInterval('PT2S'), true));
+        $master->addJob('c', new PerpetualRepetitionJob('c'), new PeriodicTiming(new DateInterval('PT3S'), true));
     })
     ->addSignalHandler(SIGINT, function (int $signal, Diana $master) {
         $master->shutdown();

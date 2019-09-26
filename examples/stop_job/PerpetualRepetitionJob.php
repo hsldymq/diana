@@ -9,15 +9,19 @@ use Archman\Diana\Job\RepeaterInterface;
 
 class PerpetualRepetitionJob implements JobInterface, RepetitionInterface
 {
-    private $name;
+    private $jobID;
 
-    public function __construct()
+    private $count = 0;
+
+    public function __construct(string $jobID)
     {
-        $this->name = md5(time());
+        $this->jobID = $jobID;
     }
 
     public function execute()
     {
+        $this->count++;
+        echo "job {$this->jobID}: execute method called, count: {$this->count}\n";
     }
 
     public function getRepeater(): RepeaterInterface
