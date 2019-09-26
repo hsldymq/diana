@@ -18,7 +18,7 @@ $factory = (new AgentFactory())
     });
 
 $master = (new Diana($factory))
-    ->addJob('1', new RepetitionJob('1'), new PeriodicTiming(new DateInterval('PT1S'), true))
+    ->addJob('1', new RepetitionJob(), new PeriodicTiming(new DateInterval('PT1S'), true))
     ->on('shutdown', function (Diana $master) {
         echo "Master Shutdown.\n";
     })
