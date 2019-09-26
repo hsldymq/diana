@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Archman\Diana;
 
+use Archman\Diana\Exception\ShutdownLoopException;
 use Archman\Diana\Job\JobInterface;
-use Archman\Diana\Job\RepetitionInterface;
 use Archman\Whisper\AbstractWorker;
 use Archman\Whisper\Message;
 use React\EventLoop\TimerInterface;
@@ -68,18 +68,15 @@ class Agent extends AbstractWorker
     private $patrolPeriod = 60.0;
 
     /**
-     * @var bool 是否处于job重复执行状态.
+     * @var Executor
      */
-    private $isInRepeatLoop = false;
-
-    /**
-     * @var string
-     */
-    private $currentJobID;
+    private $executor;
 
     public function __construct(string $id, $socketFD)
     {
         parent::__construct($id, $socketFD);
+
+        $this->executor = new Executor($socketFD);
     }
 
     public function run()
@@ -130,16 +127,16 @@ class Agent extends AbstractWorker
                 $job = $data['job'];
                 $jobID = $data['jobID'];
                 $this->errorlessEmit('executing', [$jobID]);
+                $startedAt = time();
+                $runtimeStart = $this->getTime();
                 try {
-                    $this->currentJobID = $jobID;
-                    $startAt = $this->getTime();
-                    $this->executeJob($job);
-                    $runtime = $this->getTime() - $startAt;
-                    $this->errorlessEmit('executed', [$jobID, time(), $runtime]);
+                    $this->executor->executeJob($jobID, $job);
+                    $this->errorlessEmit('executed', [$jobID, $startedAt, $this->getTime() - $runtimeStart]);
+                } catch (ShutdownLoopException $_) {
+                    $this->errorlessEmit('executed', [$jobID, $startedAt, $this->getTime() - $runtimeStart]);
+                    $this->state = self::STATE_SHUTTING;
                 } catch (\Throwable $e) {
                     $this->errorlessEmit('error', [$e]);
-                } finally {
-                    $this->currentJobID = null;
                 }
 
                 finished:
@@ -154,25 +151,8 @@ class Agent extends AbstractWorker
                 }
 
                 break;
-            case MessageTypeEnum::STOP_EXECUTING:
-                try {
-                    $data = $this->decodeMessage($msg->getContent());
-                    if ($this->currentJobID !== $data['jobID']) {
-                        throw new \Exception("can not stop job {$this->currentJobID}, incorrect job id: {$data['jobID']}");
-                    }
-                    $this->isInRepeatLoop = false;
-                } catch (\Throwable $e) {
-                    $this->errorlessEmit('error', [$e]);
-                }
-
-                break;
             case MessageTypeEnum::LAST_MSG:
-                if ($this->isInRepeatLoop) {
-                    $this->isInRepeatLoop = false;
-                    $this->state = self::STATE_SHUTTING;
-                } else {
-                    $this->runShutdownProgression();
-                }
+                $this->runShutdownProgression();
 
                 break;
             default:
@@ -312,44 +292,5 @@ class Agent extends AbstractWorker
             $this->stopProcess();
             $this->state = self::STATE_SHUTDOWN;
         }
-    }
-
-    /**
-     * 运行job逻辑.
-     *
-     * 允许job重复执行,对实现了RepetitionInterface的job,会判断在一次运行完毕后是否可以继续重复运行.
-     *
-     * @param JobInterface $job
-     *
-     * @throws
-     */
-    private function executeJob(JobInterface $job)
-    {
-        if (!($job instanceof RepetitionInterface)) {
-            $job->execute($this);
-            return;
-        }
-
-        $this->stopProcess();
-        $repeater = $job->getRepeater();
-        $this->isInRepeatLoop = true;
-        do {
-            try {
-                $job->execute($this);
-
-                if (!$this->isInRepeatLoop ||
-                    !$repeater->isRepeatable(new \DateTime()) ||
-                    (!$this->getCommunicator()->isReadable() && !$this->getCommunicator()->isWritable())
-                ) {
-                    break;
-                }
-
-                $this->process($repeater->getRepetitionInterval());
-            } catch (\Throwable $e) {
-                $this->isInRepeatLoop = false;
-                throw $e;
-            }
-        } while (true);
-        $this->isInRepeatLoop = false;
     }
 }
