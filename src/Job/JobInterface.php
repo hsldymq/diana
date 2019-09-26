@@ -8,5 +8,5 @@ use Archman\Diana\Agent;
 
 interface JobInterface
 {
-    public function execute(Agent $agent);
+    public function execute();
 }
