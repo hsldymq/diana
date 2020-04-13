@@ -29,7 +29,7 @@ class CountdownRepeater implements RepeaterInterface
 
     public function isRepeatable(\DateTimeInterface $_): bool
     {
-        return --$this->remainTimes > 0;
+        return $this->remainTimes-- > 0;
     }
 
     public function getRepetitionInterval(): float
