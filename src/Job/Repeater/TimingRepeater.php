@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Archman\Diana\Job;
+namespace Archman\Diana\Job\Repeater;
 
 /**
  * 这个repeater设置一个job运行指定时长后退出.

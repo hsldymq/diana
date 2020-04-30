@@ -1,11 +1,9 @@
 <?php
 
-use Archman\Diana\Agent;
-use Archman\Diana\Job\CountdownRepeater;
 use Archman\Diana\Job\JobInterface;
-use Archman\Diana\Job\PerpetualRepeater;
+use Archman\Diana\Job\Repeater\PerpetualRepeater;
 use Archman\Diana\Job\RepetitionInterface;
-use Archman\Diana\Job\RepeaterInterface;
+use Archman\Diana\Job\Repeater\RepeaterInterface;
 
 class PerpetualRepetitionJob implements JobInterface, RepetitionInterface
 {

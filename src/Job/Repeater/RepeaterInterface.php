@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Archman\Diana\Job;
+namespace Archman\Diana\Job\Repeater;
 
 interface RepeaterInterface
 {

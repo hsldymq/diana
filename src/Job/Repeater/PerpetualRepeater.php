@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Archman\Diana\Job;
+namespace Archman\Diana\Job\Repeater;
 
 /**
  * 这个repeater会使得job永久重复执行.
