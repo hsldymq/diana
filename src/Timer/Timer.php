@@ -54,11 +54,18 @@ class Timer implements TickerInterface
      */
     private $callback;
 
-    public function __construct(int $tickDuration, LoopInterface $eventLoop, callable $timeUpCallback)
+    /** @var DateTimeProviderInterface */
+    private $dateTimeProvider;
+
+    public function __construct(int $tickDuration, LoopInterface $eventLoop, callable $timeUpCallback, DateTimeProviderInterface $provider = null)
     {
         $this->tickDuration = $tickDuration;
         $this->eventLoop = $eventLoop;
         $this->callback = $timeUpCallback;
+        if (!$provider) {
+            $provider = new CurrentDateTimeProvider();
+        }
+        $this->dateTimeProvider = $provider;
     }
 
     public function __destruct()
@@ -192,7 +199,7 @@ class Timer implements TickerInterface
 
         /** @var TimingInterface $timing */
         $timing = $this->jobInfo[$jobID]['timing'];
-        $tick = $timing->getTimingTick($this->getCurrentDateTime(), $this);
+        $tick = $timing->getTimingTick($this->dateTimeProvider->getDateTime(), $this);
         if ($tick <= 0) {
             return;
         }
@@ -201,10 +208,5 @@ class Timer implements TickerInterface
         $this->tickJobs[$nextTick][] = $jobID;
         $this->jobInfo[$jobID]['tick'] = $tick;
         $this->jobInfo[$jobID]['indexInList'] = count($this->tickJobs[$nextTick]) - 1;
-    }
-
-    protected function getCurrentDateTime(): \DateTime
-    {
-        return new \DateTime('now');
     }
 }
