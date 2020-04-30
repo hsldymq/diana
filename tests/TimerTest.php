@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use Archman\Diana\Timer\Duration;
-use Archman\Diana\Timer\PeriodicTiming;
+use Archman\Diana\Timer\Timing\PeriodicTiming;
 use Archman\Diana\Timer\Timer;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\Factory;

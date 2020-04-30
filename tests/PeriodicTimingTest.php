@@ -1,9 +1,9 @@
 <?php
 
-use Archman\Diana\Timer\Duration;
-use Archman\Diana\Timer\PeriodicTiming;
+declare(strict_types=1);
+
+use Archman\Diana\Timer\Timing\PeriodicTiming;
 use Archman\Diana\Timer\TickerInterface;
-use Archman\Diana\Timer\Timer;
 use PHPUnit\Framework\TestCase;
 
 class PeriodicTimingTest extends TestCase
