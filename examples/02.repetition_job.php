@@ -6,7 +6,7 @@ require_once __DIR__ . '/repetition_job/RepetitionJob.php';
 use Archman\Diana\Agent;
 use Archman\Diana\AgentFactory;
 use Archman\Diana\Diana;
-use Archman\Diana\Timer\PeriodicTiming;
+use Archman\Diana\Timer\Timing\PeriodicTiming;
 
 $factory = (new AgentFactory())
     ->registerEvent('error', function (\Throwable $e) {

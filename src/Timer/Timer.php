@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Archman\Diana\Timer;
 
+use Archman\Diana\Timer\Timing\TimingInterface;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 

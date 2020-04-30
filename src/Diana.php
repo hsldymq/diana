@@ -6,7 +6,7 @@ namespace Archman\Diana;
 
 use Archman\Diana\Timer\Duration;
 use Archman\Diana\Timer\Timer;
-use Archman\Diana\Timer\TimingInterface;
+use Archman\Diana\Timer\Timing\TimingInterface;
 use Archman\Whisper\AbstractMaster;
 use Archman\Whisper\Interfaces\WorkerFactoryInterface;
 use Archman\Whisper\Message;

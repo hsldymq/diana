@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Archman\Diana\Timer;
+namespace Archman\Diana\Timer\Timing;
 
+use Archman\Diana\Timer\TickerInterface;
 use Cron\CronExpression;
 
 /**
