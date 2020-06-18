@@ -193,13 +193,6 @@ class Agent extends AbstractWorker
         return $this;
     }
 
-    public function errorlessEmit(string $event, array $args = [])
-    {
-        try {
-            $this->emit($event, $args);
-        } finally {}
-    }
-
     /**
      * @return string
      */
