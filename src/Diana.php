@@ -252,21 +252,6 @@ class Diana extends AbstractMaster
     }
 
     /**
-     * 触发事件.
-     *
-     * 屏蔽掉事件handler引发的错误.
-     *
-     * @param string $event
-     * @param array $args
-     */
-    public function errorlessEmit(string $event, array $args = [])
-    {
-        try {
-            $this->emit($event, $args);
-        } finally {}
-    }
-
-    /**
      * @param \Throwable|null $withError
      */
     public function shutdown(\Throwable $withError = null)
