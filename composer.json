@@ -1,5 +1,6 @@
 {
   "name": "hsldymq/diana",
+  "homepage": "https://github.com/hsldymq/diana",
   "license": "MIT",
   "require": {
     "php": ">=7.0.0",
