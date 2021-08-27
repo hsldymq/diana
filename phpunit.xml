@@ -2,6 +2,7 @@
         bootstrap="./vendor/autoload.php"
         stopOnFailure="false"
         colors="true"
+        cacheResult="false"
 >
     <testsuites>
         <testsuite name="all">
