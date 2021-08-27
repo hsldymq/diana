@@ -7,6 +7,7 @@ use Archman\Diana\Agent;
 use Archman\Diana\AgentFactory;
 use Archman\Diana\Diana;
 use Archman\Diana\Timer\Timing\PeriodicTiming;
+use Archman\Diana\Timer\Timing\CronTiming;
 
 $factory = (new AgentFactory())
     ->registerEvent('error', function (\Throwable $e) {
@@ -18,11 +19,9 @@ $factory = (new AgentFactory())
     });
 
 $master = (new Diana($factory))
-    ->addJob('1', new BasicJob('1'), new PeriodicTiming(new DateInterval('PT1S'), true))
-    ->addJob('2', new BasicJob('2'), new PeriodicTiming(new DateInterval('PT5S'), true))
-    ->addJob('3', new BasicJob('3'), new PeriodicTiming(new DateInterval('PT10S'), true))
-    ->addJob('4', new BasicJob('4'), new PeriodicTiming(new DateInterval('PT30S'), true))
-    ->addJob('5', new BasicJob('5'), new PeriodicTiming(new DateInterval('PT1M'), true))
+    ->addJob('CronTiming 1', new BasicJob('1'), new CronTiming('* * * * *'))
+    ->addJob('PeriodicTiming 1', new BasicJob('1'), new PeriodicTiming(new DateInterval('PT1S'), true))
+    ->addJob('PeriodicTiming 2', new BasicJob('2'), new PeriodicTiming(new DateInterval('PT5S'), true))
     ->on('shutdown', function (Diana $master) {
         echo "Master Shutdown.\n";
     })
