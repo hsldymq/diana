@@ -27,10 +27,10 @@ class PeriodicTiming implements TimingInterface
         $this->isContinuous = $isContinuous;
     }
 
-    public function getTimingTick(\DateTime $current, TickerInterface $ticker): int
+    public function getTimingTick(\DateTime $dt, TickerInterface $ticker): int
     {
-        $currentTimestamp = $current->getTimestamp();
-        $secDiff = $current->add($this->interval)->getTimestamp() - $currentTimestamp;
+        $currentTimestamp = $dt->getTimestamp();
+        $secDiff = $dt->add($this->interval)->getTimestamp() - $currentTimestamp;
 
         return intval(ceil($secDiff * $ticker->getTicksPerSec()));
     }

@@ -18,7 +18,7 @@ class CurrentDateTimeProvider implements DateTimeProviderInterface
         return $dt;
     }
 
-    public function setTimeZone(\DateTimeZone $dtz)
+    public function setTimeZone(\DateTimeZone $dtz): void
     {
         $this->timeZone = $dtz;
     }

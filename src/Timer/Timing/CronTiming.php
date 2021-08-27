@@ -28,13 +28,13 @@ class CronTiming implements TimingInterface
      */
     public function __construct(string $cronExpression)
     {
-        $this->cronExpression = CronExpression::factory($cronExpression);
+        $this->cronExpression = new CronExpression($cronExpression);
     }
 
-    public function getTimingTick(\DateTime $current, TickerInterface $ticker): int
+    public function getTimingTick(\DateTime $dt, TickerInterface $ticker): int
     {
-        $next = $this->cronExpression->getNextRunDate($current);
-        $secDiff = $next->getTimestamp() - $current->getTimestamp();
+        $next = $this->cronExpression->getNextRunDate($dt);
+        $secDiff = $next->getTimestamp() - $dt->getTimestamp();
         if ($secDiff <= 0) {
             return -1;
         }

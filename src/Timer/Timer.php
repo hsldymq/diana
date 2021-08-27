@@ -74,7 +74,7 @@ class Timer implements TickerInterface
         $this->clearJobs();
     }
 
-    public function start()
+    public function start(): void
     {
         if ($this->timer) {
             return;
@@ -86,7 +86,7 @@ class Timer implements TickerInterface
         }
     }
 
-    public function stop()
+    public function stop(): void
     {
         if ($this->timer) {
             $this->eventLoop->cancelTimer($this->timer);
@@ -96,7 +96,7 @@ class Timer implements TickerInterface
         $this->tickJobs = [];
     }
 
-    public function tick()
+    public function tick(): void
     {
         ++$this->currentTick;
 
@@ -127,7 +127,7 @@ class Timer implements TickerInterface
         unset($this->tickJobs[$this->currentTick]);
     }
 
-    public function addJob(string $jobID, TimingInterface $timing)
+    public function addJob(string $jobID, TimingInterface $timing): void
     {
         $this->jobInfo[$jobID]['timing'] = $timing;
         $this->jobInfo[$jobID]['isExecuting'] = $this->jobInfo[$jobID]['isExecuting'] ?? false;
@@ -140,7 +140,7 @@ class Timer implements TickerInterface
         }
     }
 
-    public function cancelJob(string $jobID)
+    public function cancelJob(string $jobID): void
     {
         if (!isset($this->jobInfo[$jobID])) {
             return;
@@ -157,7 +157,7 @@ class Timer implements TickerInterface
     /**
      * @param string $jobID
      */
-    public function finish(string $jobID)
+    public function finish(string $jobID): void
     {
         if (!isset($this->jobInfo[$jobID])) {
             return;
@@ -175,7 +175,7 @@ class Timer implements TickerInterface
         }
     }
 
-    public function clearJobs()
+    public function clearJobs(): void
     {
         $this->tickJobs = [];
         $this->jobInfo = [];
@@ -191,7 +191,7 @@ class Timer implements TickerInterface
         return floatval(Duration::SECOND / $this->tickDuration);
     }
 
-    private function setNextTimingTick($jobID)
+    private function setNextTimingTick($jobID): void
     {
         if (!isset($this->jobInfo[$jobID])) {
             return;

@@ -33,9 +33,9 @@ class Agent extends AbstractWorker
 {
     use TailingEventEmitterTrait;
 
-    const STATE_RUNNING = 1;
-    const STATE_SHUTTING = 2;
-    const STATE_SHUTDOWN = 3;
+    private const STATE_RUNNING = 1;
+    private const STATE_SHUTTING = 2;
+    private const STATE_SHUTDOWN = 3;
 
     /**
      * @var int
@@ -79,7 +79,7 @@ class Agent extends AbstractWorker
         $this->executor = new Executor($socketFD);
     }
 
-    public function run()
+    public function run(): void
     {
         if ($this->state !== self::STATE_SHUTDOWN) {
             return;
@@ -110,7 +110,7 @@ class Agent extends AbstractWorker
      * @return void
      * @throws
      */
-    public function handleMessage(Message $msg)
+    public function handleMessage(Message $msg): void
     {
         $this->clearShutdownTimer();
 
@@ -169,7 +169,7 @@ class Agent extends AbstractWorker
      *
      * @param int $seconds 必须大于0,否则设置无效
      */
-    public function setIdleWait(int $seconds)
+    public function setIdleWait(int $seconds): void
     {
         if ($seconds <= 0) {
             return;
@@ -201,7 +201,7 @@ class Agent extends AbstractWorker
         return $this->getWorkerID();
     }
 
-    private function trySetShutdownTimer()
+    private function trySetShutdownTimer(): void
     {
         if (!$this->idleWait || $this->shutdownTimer) {
             return;
@@ -212,7 +212,7 @@ class Agent extends AbstractWorker
         });
     }
 
-    private function clearShutdownTimer()
+    private function clearShutdownTimer(): void
     {
         if ($this->shutdownTimer) {
             $this->removeTimer($this->shutdownTimer);
@@ -277,7 +277,7 @@ class Agent extends AbstractWorker
         }
     }
 
-    private function runShutdownProgression()
+    private function runShutdownProgression(): void
     {
         if ($this->passiveShutdown) {
             $this->sendMessage(new Message(MessageTypeEnum::KILL_ME, ''));

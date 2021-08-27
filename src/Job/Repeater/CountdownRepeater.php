@@ -27,7 +27,7 @@ class CountdownRepeater implements RepeaterInterface
         $this->interval = $interval;
     }
 
-    public function isRepeatable(\DateTimeInterface $_): bool
+    public function isRepeatable(\DateTimeInterface $now): bool
     {
         return $this->remainTimes-- > 0;
     }

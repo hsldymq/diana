@@ -6,13 +6,13 @@ namespace Archman\Diana\Timer;
 
 class Duration
 {
-    const MILLISECOND = 1;
+    public const MILLISECOND = 1;
 
-    const SECOND = 1000 * self::MILLISECOND;
+    public const SECOND = 1000 * self::MILLISECOND;
 
-    const MINTUE = 60 * self::SECOND;
+    public const MINUTE = 60 * self::SECOND;
 
-    const HOUR = 60 * self::MINTUE;
+    public const HOUR = 60 * self::MINUTE;
 
-    const DAY = 24 * self::HOUR;
+    public const DAY = 24 * self::HOUR;
 }

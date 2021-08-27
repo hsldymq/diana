@@ -54,7 +54,7 @@ class Executor implements MessageHandler
      *
      * @throws
      */
-    public function executeJob(string $jobID, JobInterface $job)
+    public function executeJob(string $jobID, JobInterface $job): void
     {
         $this->currentJobID = $jobID;
         if (!($job instanceof RepetitionInterface)) {
@@ -114,7 +114,7 @@ class Executor implements MessageHandler
     /**
      * @return void
      */
-    public function finishRepeating()
+    public function finishRepeating(): void
     {
         $this->inRepeatingLoop = false;
     }
@@ -126,7 +126,7 @@ class Executor implements MessageHandler
      *
      * @throws
      */
-    private function process(float $interval = null)
+    private function process(float $interval = null): void
     {
         if ($interval !== null) {
             $this->processTimer = $this->eventLoop->addTimer($interval, function () {
@@ -146,7 +146,7 @@ class Executor implements MessageHandler
     /**
      * 移除事件循环的计时器.
      */
-    private function removeProcessTimer()
+    private function removeProcessTimer(): void
     {
         if ($this->processTimer) {
             $this->eventLoop->cancelTimer($this->processTimer);

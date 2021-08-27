@@ -8,7 +8,7 @@ use Archman\Diana\Timer\TickerInterface;
 
 class VoidTiming implements TimingInterface
 {
-    public function getTimingTick(\DateTime $current, TickerInterface $ticker): int
+    public function getTimingTick(\DateTime $dt, TickerInterface $ticker): int
     {
         return -1;
     }

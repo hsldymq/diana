@@ -50,7 +50,7 @@ class AgentScheduler
      * @param string $agentID
      * @param bool $allocated 是否已经被分配,true时设为busy
      */
-    public function add(string $agentID, bool $allocated = false)
+    public function add(string $agentID, bool $allocated = false): void
     {
         if (isset($this->agentState[$agentID])) {
             return;
@@ -70,7 +70,7 @@ class AgentScheduler
      *
      * @param string $agentID
      */
-    public function remove(string $agentID)
+    public function remove(string $agentID): void
     {
         $state = $this->agentState[$agentID] ?? null;
         if ($state === null) {
@@ -86,7 +86,7 @@ class AgentScheduler
      *
      * @param string $agentID
      */
-    public function retire(string $agentID)
+    public function retire(string $agentID): void
     {
         $state = $this->agentState[$agentID] ?? null;
         if ($state === null || $state === self::RETIRED) {
@@ -103,7 +103,7 @@ class AgentScheduler
      *
      * @return string|null 成功分配返回agent id, 没有可用的agent返回null
      */
-    public function allocate()
+    public function allocate(): ?string
     {
         end($this->agentList[self::IDLE]);
         $agentID = key($this->agentList[self::IDLE]);
@@ -121,7 +121,7 @@ class AgentScheduler
      *
      * @param string $agentID
      */
-    public function release(string $agentID)
+    public function release(string $agentID): void
     {
         if (($this->agentState[$agentID] ?? null) !== self::BUSY) {
             return;

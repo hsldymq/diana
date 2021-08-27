@@ -2,12 +2,12 @@
   "name": "hsldymq/diana",
   "license": "MIT",
   "require": {
-    "php": ">=7.0.0",
-    "hsldymq/whisper": "~0.3.0",
-    "mtdowling/cron-expression": "~1.2"
+    "php": "^7.2 || ^8.0",
+    "hsldymq/whisper": "^0.4",
+    "dragonmantank/cron-expression": "^3.1.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "~6.4"
+    "phpunit/phpunit": "^7.5 || ^9.5"
   },
   "autoload": {
     "psr-4": {
