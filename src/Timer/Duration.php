@@ -10,9 +10,9 @@ class Duration
 
     const SECOND = 1000 * self::MILLISECOND;
 
-    const MINTUE = 60 * self::SECOND;
+    const MINUTE = 60 * self::SECOND;
 
-    const HOUR = 60 * self::MINTUE;
+    const HOUR = 60 * self::MINUTE;
 
     const DAY = 24 * self::HOUR;
 }
