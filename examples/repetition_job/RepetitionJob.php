@@ -1,6 +1,5 @@
 <?php
 
-use Archman\Diana\Agent;
 use Archman\Diana\Job\CountdownRepeater;
 use Archman\Diana\Job\JobInterface;
 use Archman\Diana\Job\RepetitionInterface;

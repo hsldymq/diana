@@ -1,11 +1,7 @@
 <?php
 
 use Archman\Diana\Timer\CronTiming;
-use Archman\Diana\Timer\Duration;
-use Archman\Diana\Timer\PeriodicTiming;
 use Archman\Diana\Timer\TickerInterface;
-use Archman\Diana\Timer\Timer;
-use Cron\CronExpression;
 use PHPUnit\Framework\TestCase;
 
 class CronTimingTest extends TestCase

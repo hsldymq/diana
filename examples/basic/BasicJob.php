@@ -1,6 +1,5 @@
 <?php
 
-use Archman\Diana\Agent;
 use Archman\Diana\Job\JobInterface;
 
 class BasicJob implements JobInterface
