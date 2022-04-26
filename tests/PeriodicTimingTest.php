@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Archman\Diana\Timer\PeriodicTiming;
 use Archman\Diana\Timer\TickerInterface;
 use PHPUnit\Framework\TestCase;
