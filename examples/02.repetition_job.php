@@ -13,7 +13,7 @@ $factory = (new AgentFactory())
         echo "Agent Error: {$e->getMessage()}\n";
     })
     ->registerEvent('jobError', function (string $jobID, int $startedAt, \Throwable $e) {
-        echo "Job Execution Error: {$jobID} {$e->getMessage()}\n";
+        echo "Job Execution Error: job {$jobID} {$e->getMessage()} as @{$startedAt}\n";
     })
     ->registerEvent('executed', function (string $jobID, int $startedAt, float $runtime, Agent $agent) {
         $dt = new DateTime("@{$startedAt}");
